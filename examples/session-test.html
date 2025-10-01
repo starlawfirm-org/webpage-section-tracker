@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Session ID Test - STL Tracker</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+    .header {
+      background: #222;
+      color: white;
+      padding: 20px;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .content {
+      padding: 30px;
+    }
+    .session-info {
+      background: #f7f9fc;
+      border: 2px solid #e1e8ed;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+    .session-id {
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      background: #fff;
+      padding: 12px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+      word-break: break-all;
+      margin: 10px 0;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+    .stat-card {
+      background: white;
+      padding: 15px;
+      border-radius: 6px;
+      border: 1px solid #e1e8ed;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 5px;
+    }
+    .stat-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+    }
+    .buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 30px;
+    }
+    button {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: 500;
+    }
+    .btn-primary {
+      background: #667eea;
+      color: white;
+    }
+    .btn-primary:hover {
+      background: #5a67d8;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+    .btn-danger {
+      background: #f56565;
+      color: white;
+    }
+    .btn-danger:hover {
+      background: #e53e3e;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(245, 101, 101, 0.4);
+    }
+    .log-container {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 15px;
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      max-height: 200px;
+      overflow-y: auto;
+      margin-top: 20px;
+    }
+    .log-entry {
+      margin: 5px 0;
+      padding: 5px;
+      border-left: 3px solid #667eea;
+      padding-left: 10px;
+    }
+    .security-info {
+      background: #fef5e7;
+      border: 2px solid #f39c12;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 20px 0;
+    }
+    .security-title {
+      font-weight: bold;
+      color: #d68910;
+      margin-bottom: 10px;
+    }
+    .format-info {
+      background: #e8f5e9;
+      border: 2px solid #4caf50;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      🔐 Session ID Test
+    </div>
+    
+    <div class="content">
+      <div class="session-info">
+        <h2>현재 세션 정보</h2>
+        <div class="session-id" id="session-id">Loading...</div>
+        
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Duration</div>
+            <div class="stat-value" id="duration">0s</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Page Views</div>
+            <div class="stat-value" id="pageviews">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Idle Time</div>
+            <div class="stat-value" id="idle">0s</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Expires In</div>
+            <div class="stat-value" id="expires">30m</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Heartbeat</div>
+            <div class="stat-value" id="heartbeat">
+              <span id="heartbeat-icon">🟢</span>
+              <span id="heartbeat-count">0</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Page State</div>
+            <div class="stat-value" id="page-state">Visible</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="format-info">
+        <div class="security-title">📐 세션 ID 형식</div>
+        <strong>Format:</strong> {timestamp}-{random}-{counter}<br>
+        <strong>예시:</strong> lgk9c12ef-4f3a2b1c8d9e0fa3-0001<br>
+        <ul style="margin: 10px 0;">
+          <li><strong>timestamp:</strong> 36진법 타임스탬프 (시간순 정렬 가능)</li>
+          <li><strong>random:</strong> 16자리 암호학적 랜덤 (충돌 방지)</li>
+          <li><strong>counter:</strong> 동일 밀리초 내 중복 방지</li>
+        </ul>
+      </div>
+
+      <div class="security-info">
+        <div class="security-title">🔒 보안 특징</div>
+        <ul style="margin: 10px 0;">
+          <li>✅ <strong>crypto.randomUUID()</strong> 또는 <strong>crypto.getRandomValues()</strong> 사용</li>
+          <li>✅ 예측 불가능한 암호학적으로 안전한 랜덤 값</li>
+          <li>✅ UUID v4 수준의 충돌 확률 (2^122 중 1)</li>
+          <li>✅ sessionStorage 기반 - 브라우저 탭 단위 격리</li>
+          <li>✅ 30분 비활성 시 자동 만료</li>
+        </ul>
+      </div>
+      
+      <div class="buttons">
+        <button class="btn-primary" onclick="trackEvent()">Track Event</button>
+        <button class="btn-primary" onclick="refreshPage()">Refresh Page</button>
+        <button class="btn-danger" onclick="resetSessionId()">Reset Session</button>
+      </div>
+      
+      <div class="log-container" id="log-container">
+        <div class="log-entry">Console initialized...</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/dist/index.iife.js"></script>
+  <script>
+    const { 
+      createTracker, 
+      getSessionId, 
+      getSessionStats, 
+      getSessionMetadata, 
+      resetSession 
+    } = window.StlTracker;
+
+    // 트래커 생성
+    const tracker = createTracker({
+      endpoint: "/collect",
+      appId: "session-test"
+    });
+
+    // 로그 추가 함수
+    function addLog(message, data) {
+      const logContainer = document.getElementById('log-container');
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+      const timestamp = new Date().toLocaleTimeString();
+      entry.innerHTML = `<span style="color: #667eea">[${timestamp}]</span> ${message}`;
+      if (data) {
+        entry.innerHTML += `<br><span style="color: #a0a0a0">${JSON.stringify(data, null, 2)}</span>`;
+      }
+      logContainer.appendChild(entry);
+      logContainer.scrollTop = logContainer.scrollHeight;
+    }
+
+    // 세션 정보 업데이트
+    function updateSessionInfo() {
+      const sessionId = getSessionId();
+      const stats = getSessionStats();
+      const metadata = getSessionMetadata();
+      
+      document.getElementById('session-id').textContent = sessionId;
+      
+      if (stats) {
+        document.getElementById('duration').textContent = stats.durationFormatted;
+        document.getElementById('pageviews').textContent = stats.pageViews;
+        document.getElementById('idle').textContent = stats.idleTimeFormatted;
+        
+        const expiresInMin = Math.floor(stats.willExpireIn / 60000);
+        const expiresInSec = Math.floor((stats.willExpireIn % 60000) / 1000);
+        document.getElementById('expires').textContent = 
+          expiresInMin > 0 ? `${expiresInMin}m ${expiresInSec}s` : `${expiresInSec}s`;
+        
+        // 만료 임박 시 경고
+        if (stats.willExpireIn < 5 * 60 * 1000) {
+          document.getElementById('expires').style.color = '#f56565';
+        } else {
+          document.getElementById('expires').style.color = '#333';
+        }
+        
+        // 하트비트 정보 업데이트
+        document.getElementById('heartbeat-count').textContent = stats.heartbeatCount || 0;
+        const heartbeatIcon = document.getElementById('heartbeat-icon');
+        if (stats.heartbeatActive && stats.timeSinceLastHeartbeat < 6000) {
+          heartbeatIcon.textContent = '💚';
+          heartbeatIcon.style.fontSize = '20px';
+        } else if (stats.heartbeatActive) {
+          heartbeatIcon.textContent = '🟢';
+          heartbeatIcon.style.fontSize = '16px';
+        } else {
+          heartbeatIcon.textContent = '🔴';
+          heartbeatIcon.style.fontSize = '16px';
+        }
+        
+        // 페이지 상태 업데이트
+        const pageState = document.getElementById('page-state');
+        pageState.textContent = stats.pageVisible ? 'Visible ✨' : 'Hidden 💤';
+        pageState.style.color = stats.pageVisible ? '#4caf50' : '#f56565';
+      }
+      
+      // 세션 ID 분석
+      const parts = sessionId.split('-');
+      if (parts.length === 3) {
+        const timestamp = parseInt(parts[0], 36);
+        const created = new Date(timestamp);
+        addLog('Session analyzed', {
+          created: created.toISOString(),
+          timestampPart: parts[0],
+          randomPart: parts[1],
+          counterPart: parts[2],
+          isNew: metadata?.isNew
+        });
+      }
+    }
+
+    // 이벤트 추적
+    function trackEvent() {
+      tracker.track('test_event', {
+        action: 'button_click',
+        timestamp: new Date().toISOString()
+      });
+      addLog('Event tracked', { type: 'test_event' });
+      updateSessionInfo();
+    }
+
+    // 페이지 새로고침
+    function refreshPage() {
+      window.location.reload();
+    }
+
+    // 세션 리셋
+    function resetSessionId() {
+      const oldId = getSessionId();
+      resetSession();
+      const newId = getSessionId();
+      addLog('Session reset', { 
+        oldSessionId: oldId, 
+        newSessionId: newId 
+      });
+      updateSessionInfo();
+    }
+
+    // 초기화
+    updateSessionInfo();
+    addLog('Session initialized', {
+      sessionId: getSessionId(),
+      metadata: getSessionMetadata()
+    });
+
+    // 1초마다 업데이트 (하트비트 시각화)
+    setInterval(updateSessionInfo, 1000);
+    
+    // 페이지 가시성 변화 감지
+    document.addEventListener('visibilitychange', () => {
+      addLog('Page visibility changed', {
+        visibilityState: document.visibilityState,
+        hidden: document.hidden
+      });
+      updateSessionInfo();
+    });
+    
+    window.addEventListener('focus', () => {
+      addLog('Window received focus');
+      updateSessionInfo();
+    });
+    
+    window.addEventListener('blur', () => {
+      addLog('Window lost focus');
+      updateSessionInfo();
+    });
+
+    // 보안 기능 체크
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+      addLog('Security: crypto.randomUUID available ✅');
+    } else if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+      addLog('Security: crypto.getRandomValues available ✅');
+    } else {
+      addLog('⚠️ Warning: Using Math.random (less secure)');
+    }
+  </script>
+</body>
+</html>

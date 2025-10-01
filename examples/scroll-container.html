@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>your-tracker demo — custom root</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: system-ui;
+        height: 100vh;
+        display: grid;
+        grid-template-rows: 56px 1fr;
+      }
+      header {
+        background: #222;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        padding: 0 12px;
+      }
+      #scroll-host {
+        overflow: auto;
+        border-top: 1px solid #ddd;
+      }
+      .spacer {
+        height: 1200px;
+        background: linear-gradient(#fafafa, #eee);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #panel {
+        height: 800px;
+        background: #cde;
+        margin: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    </style>
+  </head>
+  <body>
+    <header>Custom Scroll Container</header>
+    <div id="scroll-host">
+      <div class="spacer">Scroll inside container…</div>
+      <section id="panel">TARGET PANEL</section>
+      <div class="spacer"></div>
+    </div>
+
+    <script type="module">
+      import { Tracker, monitorElementDwell } from "/dist/index.mjs";
+      const tracker = new Tracker({ endpoint: "/collect", appId: "demo" });
+      const controller = monitorElementDwell(tracker, [
+        {
+          selector: "#panel",
+          trigger: { mode: "elementCoverage", value: 0.4 },
+          observer: {
+            rootSelector: "#scroll-host",
+            rootMargin: "0px 0px 0px 0px",
+            thresholds: [0, 0.25, 0.5, 0.75, 1],
+          },
+          throttleMs: 400,
+        },
+      ]);
+      window.controller = controller;
+    </script>
+  </body>
+</html>

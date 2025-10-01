@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trigger Mode Test - 다양한 트리거 값 테스트</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1f2937;
+            color: white;
+        }
+        
+        .test-links {
+            position: sticky;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 12px;
+            z-index: 1000;
+            max-width: 400px;
+        }
+        
+        h1 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #60a5fa;
+        }
+        
+        .test-group {
+            margin-bottom: 20px;
+        }
+        
+        .test-group h2 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #fbbf24;
+        }
+        
+        .test-links a {
+            display: block;
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            background: #374151;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        
+        .test-links a:hover {
+            background: #4b5563;
+            transform: translateX(5px);
+        }
+        
+        .test-links a.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .info {
+            background: #111827;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 12px;
+            line-height: 1.8;
+        }
+        
+        .info code {
+            background: #374151;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        iframe {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: calc(100vw - 450px);
+            height: 100vh;
+            border: none;
+            background: white;
+        }
+        
+        @media (max-width: 1024px) {
+            .test-links {
+                position: relative;
+                max-width: 100%;
+                margin-bottom: 20px;
+            }
+            
+            iframe {
+                position: relative;
+                width: 100%;
+                height: 80vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-links">
+        <h1>🎯 Trigger Mode 테스트</h1>
+        
+        <div class="test-group">
+            <h2>ElementCoverage 모드 (일반 요소)</h2>
+            <a href="#" data-url="/oversized-element-test.html?mode=elementCoverage&value=0.1">
+                10% Coverage - 매우 민감
+            </a>
+            <a href="#" data-url="/oversized-element-test.html?mode=elementCoverage&value=0.3">
+                30% Coverage - 권장
+            </a>
+            <a href="#" data-url="/oversized-element-test.html?mode=elementCoverage&value=0.5">
+                50% Coverage - 중간
+            </a>
+            <a href="#" data-url="/oversized-element-test.html?mode=elementCoverage&value=0.8">
+                80% Coverage - 엄격
+            </a>
+        </div>
+        
+        <div class="test-group">
+            <h2>ElementCoverage 모드 (큰 요소)</h2>
+            <a href="#" data-url="/oversized-element-test.html?mode=elementCoverage&value=0.05">
+                5% - 즉시 트리거 (큰 요소)
+            </a>
+            <a href="#" data-url="/oversized-element-test.html?mode=elementCoverage&value=0.2">
+                20% - 빠른 트리거 (큰 요소)
+            </a>
+            <a href="#" data-url="/oversized-element-test.html?mode=elementCoverage&value=0.4">
+                40% - 중간 트리거 (큰 요소)
+            </a>
+        </div>
+        
+        <div class="test-group">
+            <h2>ViewportPosition 모드 (개선됨)</h2>
+            <a href="#" data-url="/oversized-element-test.html?mode=viewportPosition&value=0.1">
+                10% Coverage - 큰 요소용
+            </a>
+            <a href="#" data-url="/oversized-element-test.html?mode=viewportPosition&value=0.3">
+                30% Coverage - 큰 요소용
+            </a>
+            <a href="#" data-url="/oversized-element-test.html?mode=viewportPosition&value=0.5">
+                50% Coverage - 큰 요소용
+            </a>
+        </div>
+        
+        <div class="test-group">
+            <h2>Immediate 모드 - 퍼센트 마진</h2>
+            <a href="#" data-url="/oversized-element-test.html?mode=immediate&value=0">
+                즉시 트리거 - 1px이라도 보이면
+            </a>
+            <a href="#" data-url="/oversized-element-test.html?mode=immediate&value=0&margin=-10%25">
+                10% 마진 - 요소의 10% 안쪽
+            </a>
+            <a href="#" data-url="/oversized-element-test.html?mode=immediate&value=0&margin=-20%25">
+                20% 마진 - 요소의 20% 안쪽
+            </a>
+            <a href="#" data-url="/oversized-element-test.html?mode=immediate&value=0&margin=-50%25">
+                50% 마진 - 요소의 절반이 보일 때
+            </a>
+        </div>
+        
+        <div class="test-group">
+            <h2>Immediate 모드 - 픽셀 마진</h2>
+            <a href="#" data-url="/oversized-element-test.html?mode=immediate&value=0&margin=-50px">
+                50px 마진 - 50px 이상 보일 때
+            </a>
+            <a href="#" data-url="/oversized-element-test.html?mode=immediate&value=0&margin=-100px">
+                100px 마진 - 100px 이상 보일 때
+            </a>
+            <a href="#" data-url="/oversized-element-test.html?mode=immediate&value=0&margin=-200px">
+                200px 마진 - 200px 이상 보일 때
+            </a>
+            <a href="#" data-url="/oversized-element-test.html?mode=immediate&value=0&margin=-300px">
+                300px 마진 - 300px 이상 보일 때
+            </a>
+        </div>
+        
+        <div class="info">
+            <h3>📊 개선된 트리거 로직</h3>
+            <p><strong>모드별 동작:</strong></p>
+            <ul style="margin-left: 20px; margin-bottom: 10px;">
+                <li><code>immediate</code>: 1px이라도 보이면 즉시 트리거 (margin 옵션으로 조절 가능)</li>
+                <li><code>elementCoverage</code>: 요소의 X%가 보일 때 (큰 요소는 뷰포트 coverage도 확인)</li>
+                <li><code>viewportPosition</code>: 
+                    <ul style="margin-left: 20px; margin-top: 5px;">
+                        <li>일반 요소: 상단이 뷰포트 Y% 위치 도달</li>
+                        <li>큰 요소: 뷰포트의 X%를 채울 때 (단순화됨!)</li>
+                    </ul>
+                </li>
+            </ul>
+            
+            <p style="margin-top: 10px; color: #9ca3af;">
+                💡 이제 사용자가 설정한 <code>trigger.value</code>가 모든 경우에 적용됩니다!
+            </p>
+        </div>
+    </div>
+    
+    <iframe id="test-frame" src="/oversized-element-test.html?mode=elementCoverage&value=0.3"></iframe>
+    
+    <script>
+        // Handle link clicks
+        document.querySelectorAll('[data-url]').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const url = e.target.dataset.url;
+                
+                // Update iframe
+                document.getElementById('test-frame').src = url;
+                
+                // Update active state
+                document.querySelectorAll('[data-url]').forEach(l => l.classList.remove('active'));
+                e.target.classList.add('active');
+                
+                // Log
+                console.log('📍 Loading:', url);
+            });
+        });
+        
+        // Set initial active
+        document.querySelector('[data-url="/oversized-element-test.html?mode=elementCoverage&value=0.3"]').classList.add('active');
+    </script>
+</body>
+</html>

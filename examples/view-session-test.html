@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Session Test - Webpage Section Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 200vh; /* 스크롤 테스트를 위해 높게 설정 */
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.75em;
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background: #10b981;
+            color: white;
+        }
+        
+        .status-inactive {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .info-value {
+            color: #333;
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .session-id {
+            font-size: 0.85em;
+            color: #999;
+            word-break: break-all;
+            margin-top: 5px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .actions {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .engagement-bar {
+            width: 100%;
+            height: 30px;
+            background: #f0f0f0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .engagement-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981 0%, #3b82f6 100%);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+        
+        .event-log {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .log-entries {
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+        
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 5px;
+            border-left: 3px solid #3b82f6;
+            padding-left: 10px;
+            background: white;
+        }
+        
+        .timestamp {
+            color: #666;
+            font-size: 0.85em;
+        }
+        
+        .interaction-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .interaction-item {
+            text-align: center;
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 10px;
+        }
+        
+        .interaction-count {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #3b82f6;
+        }
+        
+        .interaction-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .scroll-indicator {
+            position: fixed;
+            left: 20px;
+            bottom: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 25px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .test-content {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 15px;
+            margin: 30px 0;
+        }
+        
+        .test-content h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .test-content p {
+            margin-bottom: 15px;
+            color: #666;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1em;
+            margin-top: 10px;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔬 View Session Testing Dashboard</h1>
+            <p class="subtitle">페이지 단위 세션 관리 시스템 테스트</p>
+        </div>
+        
+        <div class="dashboard">
+            <!-- Browser Session Card -->
+            <div class="card">
+                <div class="card-title">
+                    🌐 Browser Session
+                    <span class="status-badge status-active">Active</span>
+                </div>
+                <div class="session-id" id="browser-session-id">Loading...</div>
+                <div class="info-row">
+                    <span class="info-label">Duration</span>
+                    <span class="info-value" id="browser-duration">0s</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Page Views</span>
+                    <span class="info-value" id="browser-pageviews">0</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Idle Time</span>
+                    <span class="info-value" id="browser-idle">0s</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Expires In</span>
+                    <span class="info-value" id="browser-expires">30m</span>
+                </div>
+            </div>
+            
+            <!-- View Session Card -->
+            <div class="card">
+                <div class="card-title">
+                    📄 View Session
+                    <span class="status-badge status-active" id="view-status">Active</span>
+                </div>
+                <div class="session-id" id="view-session-id">Loading...</div>
+                <div class="info-row">
+                    <span class="info-label">Duration</span>
+                    <span class="info-value" id="view-duration">0s</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">URL</span>
+                    <span class="info-value" id="view-url" style="font-size: 0.85em;">Loading...</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Events Tracked</span>
+                    <span class="info-value" id="view-events">0</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Max Scroll</span>
+                    <span class="info-value" id="view-scroll">0%</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Engagement Score -->
+        <div class="card">
+            <div class="card-title">
+                📊 View Session Engagement Score
+            </div>
+            <div class="engagement-bar">
+                <div class="engagement-fill" id="engagement-bar" style="width: 0%">
+                    <span id="engagement-score">0/100</span>
+                </div>
+            </div>
+            <p style="color: #666; font-size: 0.9em; margin-top: 10px;">
+                Engagement Score는 페이지 체류 시간, 스크롤 깊이, 상호작용 횟수, 이벤트 수를 기반으로 계산됩니다.
+            </p>
+        </div>
+        
+        <!-- Interactions -->
+        <div class="card">
+            <div class="card-title">
+                🎯 View Session Interactions
+            </div>
+            <div class="interaction-grid">
+                <div class="interaction-item">
+                    <div class="interaction-count" id="clicks">0</div>
+                    <div class="interaction-label">Clicks</div>
+                </div>
+                <div class="interaction-item">
+                    <div class="interaction-count" id="scrolls">0</div>
+                    <div class="interaction-label">Scrolls</div>
+                </div>
+                <div class="interaction-item">
+                    <div class="interaction-count" id="keypresses">0</div>
+                    <div class="interaction-label">Keypresses</div>
+                </div>
+                <div class="interaction-item">
+                    <div class="interaction-count" id="mouseMoves">0</div>
+                    <div class="interaction-label">Mouse Moves</div>
+                </div>
+                <div class="interaction-item">
+                    <div class="interaction-count" id="touches">0</div>
+                    <div class="interaction-label">Touches</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Actions -->
+        <div class="actions">
+            <div class="card-title">🎮 Test Actions</div>
+            <div class="btn-group">
+                <button class="btn-primary" onclick="trackCustomEvent()">Track Custom Event</button>
+                <button class="btn-secondary" onclick="simulateInteractions()">Simulate Interactions</button>
+                <button class="btn-primary" onclick="window.location.reload()">Refresh Page (New View Session)</button>
+                <button class="btn-secondary" onclick="openNewTab()">Open in New Tab</button>
+                <button class="btn-danger" onclick="endCurrentViewSession()">End View Session</button>
+            </div>
+        </div>
+        
+        <!-- Event Log -->
+        <div class="event-log">
+            <div class="card-title">
+                📝 View Session Event Log
+            </div>
+            <div class="log-entries" id="event-log">
+                <div class="log-entry">
+                    <span class="timestamp">[System]</span> Waiting for events...
+                </div>
+            </div>
+        </div>
+        
+        <!-- Test Content -->
+        <div class="test-content">
+            <h2>📍 스크롤 테스트 영역</h2>
+            <p>이 영역은 스크롤 깊이를 테스트하기 위한 콘텐츠입니다. 페이지를 스크롤하면 View Session이 최대 스크롤 깊이를 추적합니다.</p>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+            
+            <h3 style="margin: 20px 0;">⌨️ 입력 테스트</h3>
+            <input type="text" placeholder="여기에 타이핑하면 keypress 이벤트가 추적됩니다..." />
+            
+            <h3 style="margin: 20px 0;">🖱️ 클릭 테스트</h3>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button class="btn-primary">테스트 버튼 1</button>
+                <button class="btn-secondary">테스트 버튼 2</button>
+            </div>
+        </div>
+        
+        <!-- More content for scrolling -->
+        <div class="test-content">
+            <h2>추가 콘텐츠</h2>
+            <p>페이지를 더 스크롤할 수 있도록 추가된 콘텐츠입니다.</p>
+            <p>View Session은 사용자가 이 페이지에서 얼마나 멀리 스크롤했는지 추적합니다.</p>
+        </div>
+    </div>
+    
+    <!-- Scroll Indicator -->
+    <div class="scroll-indicator">
+        Scroll: <span id="current-scroll">0%</span>
+    </div>
+    
+    <script src="/dist/index.iife.js"></script>
+    <script>
+        const { 
+            create,
+            getSessionId,
+            getSessionStats,
+            getViewSessionId,
+            getCurrentViewSession,
+            getViewSessionStats,
+            endViewSession,
+            trackViewSessionEvent
+        } = window.StlTracker;
+        
+        // Initialize tracker
+        const tracker = create({
+            endpoint: "/collect",
+            appId: "view-session-test",
+            batchSize: 5,
+            flushIntervalMs: 2000
+        });
+        
+        // Custom event counter
+        let customEventCounter = 0;
+        
+        // Track custom event
+        function trackCustomEvent() {
+            customEventCounter++;
+            tracker.track('custom_event', {
+                eventNumber: customEventCounter,
+                message: `Custom event #${customEventCounter} from View Session test`
+            });
+            addLogEntry('custom_event', `Custom event #${customEventCounter} tracked`);
+        }
+        
+        // Simulate interactions
+        function simulateInteractions() {
+            // Simulate clicks
+            for(let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    document.body.click();
+                }, i * 200);
+            }
+            
+            // Simulate scroll
+            window.scrollBy(0, 100);
+            
+            addLogEntry('simulate', 'Simulated 5 clicks and scroll');
+        }
+        
+        // Open in new tab
+        function openNewTab() {
+            window.open(window.location.href, '_blank');
+            addLogEntry('action', 'Opening in new tab (new Browser Session)');
+        }
+        
+        // End current view session
+        function endCurrentViewSession() {
+            const session = endViewSession();
+            if (session) {
+                addLogEntry('session_end', `View Session ended: ${session.viewSessionId}`);
+                document.getElementById('view-status').className = 'status-badge status-inactive';
+                document.getElementById('view-status').textContent = 'Ended';
+            }
+        }
+        
+        // Add log entry
+        function addLogEntry(type, message) {
+            const logContainer = document.getElementById('event-log');
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span class="timestamp">[${time}]</span> ${message}`;
+            logContainer.insertBefore(entry, logContainer.firstChild);
+            
+            // Keep only last 20 entries
+            while (logContainer.children.length > 20) {
+                logContainer.removeChild(logContainer.lastChild);
+            }
+        }
+        
+        // Format duration
+        function formatDuration(ms) {
+            const seconds = Math.floor(ms / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            
+            if (hours > 0) {
+                return `${hours}h ${minutes % 60}m`;
+            } else if (minutes > 0) {
+                return `${minutes}m ${seconds % 60}s`;
+            } else {
+                return `${seconds}s`;
+            }
+        }
+        
+        // Update dashboard
+        function updateDashboard() {
+            // Browser Session
+            const sessionStats = getSessionStats();
+            if (sessionStats) {
+                document.getElementById('browser-session-id').textContent = sessionStats.sessionId;
+                document.getElementById('browser-duration').textContent = sessionStats.durationFormatted;
+                document.getElementById('browser-pageviews').textContent = sessionStats.pageViews;
+                document.getElementById('browser-idle').textContent = sessionStats.idleTimeFormatted;
+                
+                const expiresInMs = sessionStats.willExpireIn;
+                const expiresInMin = Math.floor(expiresInMs / 60000);
+                const expiresInSec = Math.floor((expiresInMs % 60000) / 1000);
+                document.getElementById('browser-expires').textContent = 
+                    expiresInMin > 0 ? `${expiresInMin}m ${expiresInSec}s` : `${expiresInSec}s`;
+            }
+            
+            // View Session
+            const viewStats = getViewSessionStats();
+            if (viewStats) {
+                document.getElementById('view-session-id').textContent = viewStats.viewSessionId;
+                document.getElementById('view-duration').textContent = viewStats.durationFormatted;
+                document.getElementById('view-url').textContent = viewStats.url.split('/').pop() || viewStats.url;
+                document.getElementById('view-events').textContent = viewStats.eventCount;
+                document.getElementById('view-scroll').textContent = viewStats.maxScrollDepth + '%';
+                
+                // Engagement Score
+                const score = viewStats.engagementScore;
+                document.getElementById('engagement-score').textContent = `${score}/100`;
+                document.getElementById('engagement-bar').style.width = `${score}%`;
+                
+                // Interactions
+                document.getElementById('clicks').textContent = viewStats.interactions.clicks;
+                document.getElementById('scrolls').textContent = viewStats.interactions.scrolls;
+                document.getElementById('keypresses').textContent = viewStats.interactions.keypresses;
+                document.getElementById('mouseMoves').textContent = viewStats.interactions.mouseMoves;
+                document.getElementById('touches').textContent = viewStats.interactions.touches;
+                
+                // Status
+                if (viewStats.isActive) {
+                    document.getElementById('view-status').className = 'status-badge status-active';
+                    document.getElementById('view-status').textContent = 'Active';
+                }
+            }
+        }
+        
+        // Update scroll indicator
+        function updateScrollIndicator() {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight;
+            const clientHeight = document.documentElement.clientHeight;
+            
+            if (scrollHeight > clientHeight) {
+                const scrollPercentage = Math.round(((scrollTop + clientHeight) / scrollHeight) * 100);
+                document.getElementById('current-scroll').textContent = scrollPercentage + '%';
+            }
+        }
+        
+        // Initial log entries
+        addLogEntry('session_start', `Browser Session: ${getSessionId()}`);
+        addLogEntry('view_start', `View Session: ${getViewSessionId()}`);
+        
+        // Update dashboard every second
+        setInterval(updateDashboard, 1000);
+        updateDashboard();
+        
+        // Update scroll indicator
+        window.addEventListener('scroll', updateScrollIndicator);
+        updateScrollIndicator();
+        
+        // Log page visibility changes
+        document.addEventListener('visibilitychange', () => {
+            addLogEntry('visibility', `Page is now ${document.visibilityState}`);
+        });
+        
+        // Log some interactions
+        let lastClickTime = 0;
+        document.addEventListener('click', (e) => {
+            const now = Date.now();
+            if (now - lastClickTime > 2000) { // Log only if 2 seconds passed
+                addLogEntry('interaction', `Click on ${e.target.tagName}`);
+                lastClickTime = now;
+            }
+        });
+    </script>
+</body>
+</html>
