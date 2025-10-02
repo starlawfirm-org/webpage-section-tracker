@@ -1,0 +1,60 @@
+{
+  "name": "@starlawfirm/webpage-section-tracker-react",
+  "version": "1.0.0",
+  "description": "React hooks and components for webpage-section-tracker",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/starlawfirm-org/webpage-section-tracker.git",
+    "directory": "packages/react"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "eslint \"src/**/*.{ts,tsx}\""
+  },
+  "keywords": [
+    "react",
+    "hooks",
+    "analytics",
+    "tracking",
+    "element-dwell"
+  ],
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "author": "STARLAWFIRM Choi-Yeongung Software Development Manager",
+  "license": "MIT",
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0",
+    "webpage-section-tracker": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.13",
+    "eslint": "^9.0.0",
+    "react": "^19.1.1",
+    "tsup": "^8.0.0",
+    "typescript": "^5.5.0",
+    "webpage-section-tracker": "workspace:*"
+  }
+}
+

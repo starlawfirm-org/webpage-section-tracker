@@ -6,6 +6,7 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 .pnpm-debug.log*
+pnpm-debug.log*
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
@@ -41,6 +42,10 @@ build/Release
 # Dependency directories
 node_modules/
 jspm_packages/
+
+# pnpm
+.pnpm-store/
+# Note: pnpm-lock.yaml should be committed
 
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/
@@ -134,3 +139,63 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# IDE - JetBrains
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# IDE - Cursor
+.cursor/
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.swp
+*.swo
+*~
+.tmp/
+tmp/
+
+# Build outputs (keep dist committed for examples)
+packages/*/dist/
+examples/react-test-app/dist/
+
+# Test outputs
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+
+# Changesets (keep .changeset directory but ignore auto-generated)
+.changeset/*.md
+!.changeset/README.md
+
+# Environment
+.env.local
+.env.*.local
+!.env.example
+
+# Debug
+npm-error.log
+yarn-error.log
+pnpm-error.log
+
+# scripts
+scripts/publish.sh

@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schema V1 vs V2 비교</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #e2e8f0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #94a3b8;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .schema-panel {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(71, 85, 105, 0.5);
+            border-radius: 12px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .schema-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(71, 85, 105, 0.5);
+        }
+        
+        .schema-title {
+            font-size: 1.5em;
+            font-weight: 600;
+        }
+        
+        .v1-title {
+            color: #fbbf24;
+        }
+        
+        .v2-title {
+            color: #60a5fa;
+        }
+        
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+        
+        .badge-old {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+            border: 1px solid rgba(251, 191, 36, 0.4);
+        }
+        
+        .badge-new {
+            background: rgba(96, 165, 250, 0.2);
+            color: #60a5fa;
+            border: 1px solid rgba(96, 165, 250, 0.4);
+        }
+        
+        .json-viewer {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            overflow-x: auto;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        pre {
+            margin: 0;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        
+        .controls {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(71, 85, 105, 0.5);
+            border-radius: 12px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            margin-bottom: 20px;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            color: white;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4);
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #60a5fa;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #94a3b8;
+            font-size: 0.9em;
+        }
+        
+        .highlight {
+            background: rgba(96, 165, 250, 0.2);
+            padding: 1px 3px;
+            border-radius: 3px;
+        }
+        
+        .key { color: #60a5fa; }
+        .string { color: #86efac; }
+        .number { color: #fbbf24; }
+        .boolean { color: #f472b6; }
+        .null { color: #94a3b8; }
+        
+        .improvements {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        
+        .improvements h3 {
+            color: #86efac;
+            margin-bottom: 10px;
+        }
+        
+        .improvements ul {
+            margin-left: 20px;
+            color: #cbd5e1;
+        }
+        
+        .improvements li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Schema V1 vs V2 비교</h1>
+        <p class="subtitle">더 구조화되고 확장 가능한 새로운 스키마 설계</p>
+        
+        <div class="controls">
+            <h3 style="margin-bottom: 15px;">🎮 테스트 이벤트 생성</h3>
+            <div class="btn-group">
+                <button onclick="generateSimpleEvent()">단순 이벤트</button>
+                <button onclick="generateComplexEvent()">복잡한 이벤트</button>
+                <button onclick="generateBatchEvents()">배치 이벤트</button>
+                <button onclick="clearAll()">전체 지우기</button>
+            </div>
+        </div>
+        
+        <div class="comparison-grid">
+            <!-- V1 스키마 -->
+            <div class="schema-panel">
+                <div class="schema-header">
+                    <h2 class="schema-title v1-title">V1 Schema</h2>
+                    <span class="badge badge-old">Current</span>
+                </div>
+                <div class="json-viewer">
+                    <pre id="v1-json"></pre>
+                </div>
+                <div class="stats" id="v1-stats"></div>
+            </div>
+            
+            <!-- V2 스키마 -->
+            <div class="schema-panel">
+                <div class="schema-header">
+                    <h2 class="schema-title v2-title">V2 Schema</h2>
+                    <span class="badge badge-new">Proposed</span>
+                </div>
+                <div class="json-viewer">
+                    <pre id="v2-json"></pre>
+                </div>
+                <div class="stats" id="v2-stats"></div>
+                <div class="improvements">
+                    <h3>✨ 개선사항</h3>
+                    <ul>
+                        <li>📦 논리적 그룹화: 세션, 환경, 데이터 분리</li>
+                        <li>🎯 타입 안정성: 명확한 필드 정의</li>
+                        <li>🚀 배치 최적화: 공통 정보 중복 제거</li>
+                        <li>🔌 확장성: 새로운 필드 추가 용이</li>
+                        <li>📊 분석 용이: 구조화된 데이터로 쿼리 최적화</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/dist/index.iife.js"></script>
+    <script type="module">
+        // V1 -> V2 변환 함수 (인라인)
+        function convertToV2(v1Event) {
+            const ctx = v1Event.ctx || {};
+            
+            // V2 구조 생성
+            const v2Event = {
+                type: v1Event.type,
+                timestamp: v1Event.ts,
+                
+                // 세션 정보 (별도 최상위 필드)
+                session: {
+                    browser: {
+                        id: ctx.sessionId || 'unknown',
+                        startedAt: ctx.sessionStart || new Date().toISOString(),
+                        pageViews: ctx.sessionPageViews || 1,
+                        isNew: ctx.isNewSession || false
+                    }
+                },
+                
+                // 환경 정보
+                environment: {
+                    app: {
+                        id: ctx.appId || 'demo',
+                        version: '0.1.2',
+                        env: 'development'
+                    },
+                    page: {
+                        url: ctx.page || window.location.href,
+                        title: document.title,
+                        referrer: ctx.referrer
+                    },
+                    device: {
+                        timezone: ctx.tz || Intl.DateTimeFormat().resolvedOptions().timeZone,
+                        language: ctx.lang,
+                        userAgent: ctx.ua
+                    }
+                },
+                
+                // 이벤트 데이터
+                data: v1Event.data
+            };
+            
+            // View Session (있는 경우)
+            if (ctx.viewSessionId) {
+                v2Event.session.view = {
+                    id: ctx.viewSessionId,
+                    parentSessionId: ctx.sessionId || 'unknown',
+                    startedAt: ctx.viewSessionStart || new Date().toISOString(),
+                    duration: ctx.viewDuration || 0,
+                    engagement: ctx.viewEngagement || 0
+                };
+            }
+            
+            // Screen 정보 (있는 경우)
+            if (ctx.screen) {
+                v2Event.environment.device.screen = {
+                    width: ctx.screen.w,
+                    height: ctx.screen.h,
+                    pixelRatio: ctx.screen.dpr
+                };
+            }
+            
+            // 메타데이터
+            v2Event.meta = {
+                sdkVersion: '0.1.2',
+                transport: 'fetch',
+                queuedAt: v1Event.ts
+            };
+            
+            return v2Event;
+        }
+        
+        // V2 배치 최적화
+        function convertBatchToV2(v1Batch) {
+            const events = v1Batch.events || [];
+            
+            // 공통 정보 추출
+            const commonSessionId = events[0]?.ctx?.sessionId;
+            const isCommonSession = events.every(e => e.ctx?.sessionId === commonSessionId);
+            
+            const v2Batch = {
+                // 공통 정보
+                common: isCommonSession ? {
+                    session: {
+                        browser: {
+                            id: commonSessionId,
+                            startedAt: events[0]?.ctx?.sessionStart,
+                            pageViews: events[0]?.ctx?.sessionPageViews,
+                            isNew: events[0]?.ctx?.isNewSession
+                        }
+                    }
+                } : undefined,
+                
+                // 개별 이벤트 (공통 정보 제외)
+                events: events.map(e => {
+                    const v2 = convertToV2(e);
+                    if (isCommonSession) {
+                        delete v2.session.browser; // 공통 정보 제거
+                    }
+                    return v2;
+                }),
+                
+                // 배치 메타데이터
+                batchMeta: {
+                    batchId: `batch_${Date.now().toString(36)}`,
+                    batchSize: events.length,
+                    createdAt: Date.now()
+                }
+            };
+            
+            return v2Batch;
+        }
+        
+        // JSON 구문 하이라이팅
+        function syntaxHighlight(json) {
+            return json
+                .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, 
+                    function (match) {
+                        let cls = 'number';
+                        if (/^"/.test(match)) {
+                            if (/:$/.test(match)) {
+                                cls = 'key';
+                            } else {
+                                cls = 'string';
+                            }
+                        } else if (/true|false/.test(match)) {
+                            cls = 'boolean';
+                        } else if (/null/.test(match)) {
+                            cls = 'null';
+                        }
+                        return '<span class="' + cls + '">' + match + '</span>';
+                    });
+        }
+        
+        // 통계 계산
+        function calculateStats(json) {
+            const size = new Blob([json]).size;
+            const lines = json.split('\n').length;
+            const depth = (json.match(/{/g) || []).length;
+            
+            return {
+                size: `${(size / 1024).toFixed(2)} KB`,
+                lines: lines,
+                depth: depth
+            };
+        }
+        
+        // UI 업데이트
+        function updateDisplay(v1Event, v2Event) {
+            const v1Json = JSON.stringify(v1Event, null, 2);
+            const v2Json = JSON.stringify(v2Event, null, 2);
+            
+            // JSON 표시
+            document.getElementById('v1-json').innerHTML = syntaxHighlight(v1Json);
+            document.getElementById('v2-json').innerHTML = syntaxHighlight(v2Json);
+            
+            // 통계 표시
+            const v1Stats = calculateStats(v1Json);
+            const v2Stats = calculateStats(v2Json);
+            
+            document.getElementById('v1-stats').innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${v1Stats.size}</div>
+                    <div class="stat-label">크기</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${v1Stats.lines}</div>
+                    <div class="stat-label">라인 수</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${v1Stats.depth}</div>
+                    <div class="stat-label">중첩 깊이</div>
+                </div>
+            `;
+            
+            document.getElementById('v2-stats').innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${v2Stats.size}</div>
+                    <div class="stat-label">크기</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${v2Stats.lines}</div>
+                    <div class="stat-label">라인 수</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${v2Stats.depth}</div>
+                    <div class="stat-label">중첩 깊이</div>
+                </div>
+            `;
+        }
+        
+        // 테스트 이벤트 생성
+        const { getSessionId, getViewSessionId } = window.StlTracker;
+        
+        function generateSimpleEvent() {
+            const v1Event = {
+                type: 'button_click',
+                ts: Date.now(),
+                data: {
+                    buttonId: 'test-button',
+                    label: 'Generate Event'
+                },
+                ctx: {
+                    appId: 'schema-test',
+                    page: window.location.href,
+                    sessionId: getSessionId(),
+                    sessionPageViews: 1,
+                    isNewSession: false,
+                    viewSessionId: getViewSessionId()
+                }
+            };
+            
+            const v2Event = convertToV2(v1Event);
+            updateDisplay(v1Event, v2Event);
+        }
+        
+        function generateComplexEvent() {
+            const v1Event = {
+                type: 'element_dwell_progress',
+                ts: Date.now(),
+                data: {
+                    selector: '#hero',
+                    dwellMs: 5000,
+                    visibleNow: true,
+                    coverage: 0.85,
+                    elementSize: { w: 1200, h: 600 },
+                    viewport: { w: 1920, h: 1080 }
+                },
+                ctx: {
+                    appId: 'schema-test',
+                    page: window.location.href,
+                    referrer: document.referrer,
+                    tz: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                    lang: navigator.language,
+                    ua: navigator.userAgent,
+                    screen: { 
+                        w: screen.width, 
+                        h: screen.height, 
+                        dpr: window.devicePixelRatio 
+                    },
+                    sessionId: getSessionId(),
+                    sessionStart: new Date(Date.now() - 300000).toISOString(),
+                    sessionPageViews: 3,
+                    isNewSession: false,
+                    viewSessionId: getViewSessionId(),
+                    viewSessionStart: new Date(Date.now() - 60000).toISOString(),
+                    viewDuration: 60000,
+                    viewEngagement: 75
+                }
+            };
+            
+            const v2Event = convertToV2(v1Event);
+            updateDisplay(v1Event, v2Event);
+        }
+        
+        function generateBatchEvents() {
+            const sessionId = getSessionId();
+            const events = [
+                {
+                    type: 'page_view',
+                    ts: Date.now() - 5000,
+                    data: { source: 'navigation' },
+                    ctx: { appId: 'schema-test', sessionId }
+                },
+                {
+                    type: 'click',
+                    ts: Date.now() - 3000,
+                    data: { target: 'button#submit' },
+                    ctx: { appId: 'schema-test', sessionId }
+                },
+                {
+                    type: 'custom_event',
+                    ts: Date.now(),
+                    data: { action: 'test' },
+                    ctx: { appId: 'schema-test', sessionId }
+                }
+            ];
+            
+            const v1Batch = { events };
+            const v2Batch = convertBatchToV2(v1Batch);
+            
+            updateDisplay(v1Batch, v2Batch);
+        }
+        
+        function clearAll() {
+            document.getElementById('v1-json').innerHTML = '';
+            document.getElementById('v2-json').innerHTML = '';
+            document.getElementById('v1-stats').innerHTML = '';
+            document.getElementById('v2-stats').innerHTML = '';
+        }
+        
+        // 초기 로드
+        generateSimpleEvent();
+    </script>
+</body>
+</html>

@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const root = path.resolve(__dirname, '..');
 const examplesDir = path.join(root, 'examples');
-const distDir = path.join(root, 'dist');
+const distDir = path.join(root, 'packages/core/dist');
 const port = process.env.PORT || 5173;
 
 const mime = {
