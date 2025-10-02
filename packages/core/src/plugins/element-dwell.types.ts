@@ -84,6 +84,5 @@ export interface ElementDwellSnapshot {
 export interface ElementDwellController {
   stop(): void;
   getSnapshots(): ElementDwellSnapshot[];
-  flush(): void;
-  getState(): ElementDwellSnapshot[];
+  onChange(callback: (snapshots: ElementDwellSnapshot[]) => void): () => void;
 }

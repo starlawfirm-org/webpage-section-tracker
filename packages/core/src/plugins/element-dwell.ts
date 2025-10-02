@@ -1,5 +1,5 @@
 import { Tracker } from "../core/tracker";
-import type { ElementDwellConfig, ElementDwellSnapshot } from "./element-dwell.types";
+import type { ElementDwellConfig, ElementDwellSnapshot, ElementDwellController } from "./element-dwell.types";
 
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 
@@ -68,10 +68,7 @@ function buildStableSelector(el: Element): string | undefined {
 }
 
 
-export interface ElementDwellController {
-  stop(): void;
-  getSnapshots(): ElementDwellSnapshot[];
-}
+// ElementDwellController는 element-dwell.types.ts에 정의되어 있음
 
 type Internal = {
   el: Element;
@@ -178,6 +175,24 @@ function optimizeThresholds(allThresholds: number[][]): number[] {
 export function monitorElementDwell(tracker: Tracker, configs: ElementDwellConfig[]): ElementDwellController {
   const items: Internal[] = [];
   const page = { visible: true, focused: true };
+  
+  // Event-based subscription (onChange listeners)
+  const listeners = new Set<(snapshots: ElementDwellSnapshot[]) => void>();
+  
+  function notifyListeners() {
+    if (listeners.size > 0) {
+      const snapshots = items.map(it => it.state);
+      listeners.forEach(callback => {
+        try {
+          callback(snapshots);
+        } catch (error) {
+          if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production') {
+            console.error('[ElementDwell] onChange callback error:', error);
+          }
+        }
+      });
+    }
+  }
 
   const ioRoot: Element | null = (() => {
     const rootSel = configs.find(c => c.observer?.rootSelector)?.observer?.rootSelector;
@@ -434,6 +449,9 @@ export function monitorElementDwell(tracker: Tracker, configs: ElementDwellConfi
       isOversized: s.isOversized,
       visibleHeightPx: s.visibleHeightPx
     });
+    
+    // onChange 리스너들에게 변경 통지
+    notifyListeners();
   }
 
 
@@ -663,7 +681,14 @@ export function monitorElementDwell(tracker: Tracker, configs: ElementDwellConfi
       if (resizeDebTimer) clearTimeout(resizeDebTimer);
       finalize();
     },
-    getSnapshots() { return items.map(it => it.state); }
+    getSnapshots() { return items.map(it => it.state); },
+    onChange(callback: (snapshots: ElementDwellSnapshot[]) => void) {
+      listeners.add(callback);
+      // 초기 스냅샷 즉시 전달
+      callback(items.map(it => it.state));
+      // Unsubscribe 함수 반환
+      return () => listeners.delete(callback);
+    }
   };
 
   // 가시성 판정 헬퍼: "최소 1px 가시 + 모드별 조건"을 강제

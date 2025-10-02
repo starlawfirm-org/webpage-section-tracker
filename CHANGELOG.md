@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2025-10-02
+
+### 🚀 Major Performance Improvement
+
+#### Added
+- ⚡ **Event-based subscription API**: `controller.onChange(callback)` 추가
+  - 폴링 완전 제거 (100-500ms interval → 0ms)
+- 🎯 **Smart update notification**: emitProgress 시에만 onChange 호출
+  - throttleMs 설정에 따라 자동 제어
+  - heartbeat 간격에 맞춰 업데이트
+  - 불필요한 리렌더 완전 차단
+
+#### Changed
+- **React Hook**: 폴링 → 이벤트 기반 구독
+  - `useElementDwell` 완전히 재작성
+  - 100ms 폴링 제거
+  - onChange 구독으로 변경
+  - 초기 스냅샷 즉시 전달
+
+#### Performance
+- **Before**: 초당 10회 폴링 → CPU 5-10% 사용예상
+- **After**: 이벤트 기반 → CPU <1% 사용예상
+- **React 리렌더**: 감소
+
+### Breaking Changes
+- `useElementDwell` 세 번째 파라미터 `updateInterval` 제거 (더 이상 불필요)
+
 ## [1.0.1] - 2025-10-02
 
 ### Documentation
