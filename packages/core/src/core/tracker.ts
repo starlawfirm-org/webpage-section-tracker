@@ -2,10 +2,20 @@ import { now } from "../utils/time";
 import { EventQueue } from "./queue";
 import { beaconTransport } from "../transports/beacon";
 import { fetchTransport } from "../transports/fetch";
-import { initSession, getSessionContext, touchSession } from "../utils/session";
-import { getCurrentViewSession, trackViewSessionEvent } from "../utils/view-session";
+import { startSessionManagement, getSessionContext, touchSession } from "../utils/session";
 import { mapEventToV2, mapBatchToV2 } from "./mapper";
-import type { BaseContext, EventPayload, TrackerOptions, Transport } from "../types";
+import type { BaseContext, EventPayload, TrackerOptionsV1, TrackerOptionsV2, Transport } from "../types";
+
+/**
+ * 이벤트 고유 ID 생성 (중복 이벤트 방지)
+ */
+let eventIdCounter = 0;
+function generateEventId(): string {
+  const timestamp = Date.now().toString(36);
+  const counter = (++eventIdCounter).toString(36).padStart(4, '0');
+  const random = Math.random().toString(36).substring(2, 8);
+  return `evt_${timestamp}_${random}_${counter}`;
+}
 
 function resolveContext(appId: string, extra?: Partial<BaseContext>): BaseContext {
   const loc = typeof location !== "undefined" ? location : ({} as Location);
@@ -13,11 +23,8 @@ function resolveContext(appId: string, extra?: Partial<BaseContext>): BaseContex
   const scr = typeof screen !== "undefined" ? screen : ({} as Screen);
   const intlTZ = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
   
-  // 세션 컨텍스트 가져오기
+  // 3계층 세션 컨텍스트 가져오기
   const sessionCtx = getSessionContext();
-  
-  // View Session 컨텍스트 가져오기
-  const viewSession = getCurrentViewSession();
   
   return {
     appId,
@@ -27,30 +34,30 @@ function resolveContext(appId: string, extra?: Partial<BaseContext>): BaseContex
     lang: nav?.language,
     ua: nav?.userAgent,
     screen: scr ? { w: scr.width, h: scr.height, dpr: window?.devicePixelRatio } : undefined,
-    // Browser Session
-    sessionId: sessionCtx.sessionId as string | undefined,
-    sessionStart: sessionCtx.sessionStart as string | undefined,
-    sessionPageViews: sessionCtx.pageViews as number | undefined,
-    isNewSession: sessionCtx.isNewSession as boolean | undefined,
-    // View Session
-    viewSessionId: viewSession?.viewSessionId,
-    viewSessionStart: viewSession ? new Date(viewSession.startedAt).toISOString() : undefined,
-    viewDuration: viewSession?.timeOnPage,
-    viewEngagement: viewSession ? Math.round((viewSession.interactions.clicks + viewSession.interactions.scrolls) * 10) : undefined,
+    
+    // 3계층 세션 데이터 (v2.0)
+    ...sessionCtx,
+    
+    // 하위 호환성 (v1 필드)
+    sessionId: sessionCtx.browserId as string,
+    sessionStart: new Date(sessionCtx.browserFirstVisit as number).toISOString(),
+    sessionPageViews: sessionCtx.browserTotalViews as number,
+    isNewSession: sessionCtx.isNewBrowser as boolean,
+    
     ...extra
   };
 }
 
 export class Tracker {
   private queue: EventQueue;
-  private opts: Required<TrackerOptions>;
+  private opts: Required<TrackerOptionsV1 | TrackerOptionsV2>;
   private enabled: boolean;
   private paused = false;
   private cleanup: () => void = () => {};
 
-  constructor(options: TrackerOptions) {
-    // 세션 초기화 (pageView 증가 안 함)
-    initSession(false);
+  constructor(options: TrackerOptionsV1 | TrackerOptionsV2) {
+    // 3계층 세션 관리 시작
+    startSessionManagement();
     
     const {
       endpoint,
@@ -82,7 +89,7 @@ export class Tracker {
       getConsent,
       context,
       fetcher
-    } as Required<TrackerOptions>;
+    } as Required<TrackerOptionsV1 | TrackerOptionsV2>;
 
     // TODO: Throw error instead of warning for conflicting options
     if (fetcher && fetcher !== undefined && useBeacon) {
@@ -153,9 +160,8 @@ export class Tracker {
 
   track(type: string, data?: any, ctx?: any) {
     if (!this.enabled) return;
-    // 이벤트 추적 시 세션 활동 업데이트
-    touchSession(); // Browser Session 업데이트
-    trackViewSessionEvent(type, data); // View Session에 이벤트 추가
+    // 이벤트 추적 시 세션 활동 업데이트 (3계층 세션)
+    touchSession();
     
     // 기본 context에 세션 정보 포함 (사용자 제공 ctx와 병합)
     const fullContext = {
@@ -163,7 +169,15 @@ export class Tracker {
       ...ctx
     };
     
-    const ev = { type, ts: Date.now(), data, ctx: fullContext };
+    // 이벤트 고유 ID 부여 (중복 방지)
+    const ev = { 
+      type, 
+      ts: Date.now(), 
+      data, 
+      ctx: fullContext,
+      eventId: generateEventId()  // 이벤트 발생 시점에 ID 부여
+    };
+    
     this.queue.enqueue(ev, this.opts.maxQueueSize);
   }
 

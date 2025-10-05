@@ -1,21 +1,25 @@
-export type { TrackerOptions, BaseContext, EventPayload } from "./types";
+export type { TrackerOptionsV1, TrackerOptionsV2, BaseContext, EventPayload } from "./types";
 export { Tracker } from "./core/tracker";
+
+// 3계층 세션 시스템 (v2.0)
 export {
   getSessionId,
   getSessionMetadata,
-  getSessionStats,
   getSessionContext,
-  resetSession
+  resetSession,
+  touchSession,
+  incrementPageView,
+  incrementViewCount,
+  logSessionInfo,
+  getSessionDebugInfo
 } from "./utils/session";
-export type { SessionData } from "./utils/session";
-export {
-  getViewSessionId,
-  getCurrentViewSession,
-  getViewSessionStats,
-  endViewSession,
-  trackViewSessionEvent
-} from "./utils/view-session";
-export type { ViewSessionData } from "./utils/view-session";
+export type { 
+  SessionData, 
+  BrowserSessionData, 
+  PageSessionData, 
+  ViewSessionData,
+  LegacySessionData
+} from "./utils/session";
 
 // Element Dwell Plugin
 export { monitorElementDwell } from "./plugins/element-dwell";
@@ -26,7 +30,7 @@ export type {
   DwellTriggerMode
 } from "./plugins/element-dwell.types";
 
-export function createTracker(opts: import("./types").TrackerOptions) {
+export function createTracker(opts: import("./types").TrackerOptionsV1 | import("./types").TrackerOptionsV2) {
   return new (requireOrImportTracker())(opts);
 }
 

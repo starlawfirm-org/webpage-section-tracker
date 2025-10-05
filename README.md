@@ -14,12 +14,22 @@
 
 ---
 
+## 🎊 Latest Release: v1.2.0
+
+### What's New
+- 🏗️ **3계층 세션 시스템**: Browser / Page / View Session 분리
+- 🔒 **이벤트 중복 방지**: 3단계 방어 (100% 차단)
+- 🚫 **탭별 격리**: sessionStorage로 큐 오염 방지
+- ⚡ **Event-based API**: onChange로 폴링 제거 (v1.1.0)
+
+---
+
 ## 📦 Packages
 
 | Package | Version | Description |
 |---------|---------|-------------|
-| [webpage-section-tracker](./packages/core) | 1.0.1 | 🎯 Core tracking library |
-| [@starlawfirm/webpage-section-tracker-react](./packages/react) | 1.0.0 | ⚛️ React hooks & components |
+| [webpage-section-tracker](./packages/core) | 1.2.0 | 🎯 Core tracking library |
+| [@starlawfirm/webpage-section-tracker-react](./packages/react) | 1.2.0 | ⚛️ React hooks & components |
 
 ### Core Package
 \`\`\`bash

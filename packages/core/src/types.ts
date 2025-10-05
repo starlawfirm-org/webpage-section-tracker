@@ -1,3 +1,6 @@
+import { BatchPayloadV2 } from "./types.v2";
+
+
 export type TransportResult = { ok: boolean; status?: number; retryAfterMs?: number };
 
 export type Transport = (url: string, payload: unknown, opts?: { timeoutMs?: number }) => Promise<TransportResult>;
@@ -5,10 +8,9 @@ export type Transport = (url: string, payload: unknown, opts?: { timeoutMs?: num
 // TODO: Add session configuration options
 // TODO: Add storage strategy configuration (localStorage, IndexedDB, memory-only)
 // TODO: Add lifecycle hooks (onError, onFlush, onBatch)
-export type TrackerOptions = {
+type TrackerBaseType = {
   endpoint: string; // e.g. "/collect" or full URL
   appId: string; // logical app identifier
-  schemaVersion?: 'v1' | 'v2'; // 스키마 버전 (default: 'v1')
   useBeacon?: boolean; // prefer sendBeacon
   batchSize?: number; // default 20
   flushIntervalMs?: number; // default 5000
@@ -18,13 +20,22 @@ export type TrackerOptions = {
   sampleRate?: number; // 0..1 (default 1)
   getConsent?: () => boolean; // return true if allowed to track
   context?: Partial<BaseContext>;
-  fetcher?: (url: string, payload: unknown) => Promise<TransportResult> | undefined;
+}
+
+export interface TrackerOptionsV1 extends TrackerBaseType {
+  schemaVersion: 'v1'; // 스키마 버전 (default: 'v1')
+  fetcher?: (url: string, payload: EventPayload) => Promise<TransportResult> | undefined;
   // TODO: Add these optional configs:
   // sessionTTL?: number;
   // heartbeatInterval?: number;
   // storageStrategy?: 'localStorage' | 'indexedDB' | 'memory';
   // onError?: (error: Error, context: any) => void;
   // compression?: boolean;
+}
+
+export interface TrackerOptionsV2 extends TrackerBaseType {
+  schemaVersion: 'v2'; // 스키마 버전 (default: 'v1')
+  fetcher?: (url: string, payload: BatchPayloadV2) => Promise<TransportResult> | undefined;
 };
 
 export type EventPayload = {

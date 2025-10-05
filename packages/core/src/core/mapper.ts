@@ -67,6 +67,9 @@ export function mapContextToV2(v1Context: Partial<BaseContext>): {
     if (url.search) {
       page.query = Object.fromEntries(url.searchParams.entries());
     }
+    if (typeof document !== 'undefined') {
+      page.title = document.title;
+    }
   } catch (error) {
     // TODO: Log malformed URLs for debugging
     // URL 파싱 실패 시 무시 (상대 경로나 invalid URL일 수 있음)

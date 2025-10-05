@@ -10,7 +10,8 @@ export { Controls } from './components/Controls';
 // Re-export types from tracker
 export type {
   Tracker,
-  TrackerOptions,
+  TrackerOptionsV1,
+  TrackerOptionsV2,
   ElementDwellConfig,
   ElementDwellSnapshot,
   BaseContext,

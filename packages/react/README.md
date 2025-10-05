@@ -1,21 +1,36 @@
-# @webpage-section-tracker/react
+# @starlawfirm/webpage-section-tracker-react
 
 React hooks and utilities for [webpage-section-tracker](../core).
+
+## 🎊 Latest: v1.2.0
+
+### What's New
+
+#### v1.2.0 (2025-10-05)
+- 🔄 Core 패키지 업데이트 (v1.2.0 호환)
+- 📦 타입 정의 개선
+
+#### v1.1.0 (2025-10-02)
+- ⚡ **Event-based subscription**: onChange API로 폴링 제거
+- 🔋 **성능 10배 향상**: CPU 사용률 감소, 리렌더 감소
+- 🚫 **Breaking**: `useElementDwell` 세 번째 파라미터 제거
+
+---
 
 ## Installation
 
 ```bash
-npm install webpage-section-tracker @webpage-section-tracker/react
+npm install webpage-section-tracker @starlawfirm/webpage-section-tracker-react
 # or
-yarn add webpage-section-tracker @webpage-section-tracker/react
+yarn add webpage-section-tracker @starlawfirm/webpage-section-tracker-react
 # or
-pnpm add webpage-section-tracker @webpage-section-tracker/react
+pnpm add webpage-section-tracker @starlawfirm/webpage-section-tracker-react
 ```
 
 ## Quick Start
 
 ```tsx
-import { useTracker, useElementDwell } from '@webpage-section-tracker/react';
+import { useTracker, useElementDwell } from '@starlawfirm/webpage-section-tracker-react';
 
 function App() {
   // Initialize tracker
@@ -93,7 +108,7 @@ Monitors element visibility and dwell time.
 ### Basic Usage
 
 ```tsx
-import { useTracker, useElementDwell } from '@webpage-section-tracker/react';
+import { useTracker, useElementDwell } from '@starlawfirm/webpage-section-tracker-react';
 
 function ProductList() {
   const tracker = useTracker({
@@ -150,7 +165,7 @@ function DynamicTracker() {
 ### With TypeScript
 
 ```tsx
-import type { ElementDwellSnapshot } from '@webpage-section-tracker/react';
+import type { ElementDwellSnapshot } from '@starlawfirm/webpage-section-tracker-react';
 
 interface TrackedElementProps {
   snapshot: ElementDwellSnapshot;
@@ -174,11 +189,12 @@ All hooks and types are fully typed:
 ```typescript
 import type {
   Tracker,
-  TrackerOptions,
+  TrackerOptionsV1,
+  TrackerOptionsV2,
   ElementDwellConfig,
   ElementDwellSnapshot,
   DwellTriggerMode
-} from '@webpage-section-tracker/react';
+} from '@starlawfirm/webpage-section-tracker-react';
 ```
 
 ## Best Practices

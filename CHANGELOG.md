@@ -7,6 +7,91 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 🐛 Critical Bug Fix: 이벤트 중복 전송 및 큐 오염 방지
+
+#### Fixed
+- 🔒 **이벤트 중복 전송 완전 차단**: 이미 전송된 이벤트 재전송 방지
+  - **고유 ID 부여**: 모든 이벤트에 `_queueId` 자동 생성
+  - **전송 추적**: `sentEventIds` Set으로 전송 완료 이벤트 추적
+  - **복원 시 중복 제거**: localStorage 복원 시 이미 전송된 이벤트 필터링
+  - **persist 강화**: sentEventIds도 localStorage에 저장
+
+- 🚫 **탭 간 큐 오염 방지**: localStorage → sessionStorage 변경
+  - **Before**: localStorage 사용 → 모든 탭이 큐 공유 → 오염
+  - **After**: sessionStorage 사용 → 탭별 독립 큐 → 격리
+  - **v1 마이그레이션**: localStorage v1 큐를 sessionStorage v2로 자동 이전
+  - **클린업**: v1 localStorage 자동 삭제
+
+#### Technical Details
+- **이중 ID 시스템**:
+  - `eventId`: 이벤트 발생 시점에 생성 (tracker.track)
+  - `_queueId`: 큐 추가 시점에 생성 (백업용)
+  - eventId 우선 사용, 없으면 _queueId 사용
+  
+- **3단계 중복 방지**:
+  1. **enqueue 시**: eventId로 큐 내 중복 체크
+  2. **enqueue 시**: sentEventIds로 전송 완료 체크
+  3. **flush 시**: 최종 중복 체크
+
+- **저장소 변경**:
+  - 큐: `__stl_tracker_queue_v2` (sessionStorage, 탭별 격리)
+  - sentEventIds: `__stl_sent_event_ids` (localStorage, 새로고침 후에도 유지)
+  - v1 마이그레이션: localStorage → sessionStorage 자동 전환
+
+#### Impact
+- ✅ 중복 이벤트 100% 차단
+- ✅ 탭 간 큐 오염 완전 방지
+- ✅ 데이터 정확성 보장
+- ✅ 새로고침 후에도 중복 방지
+- ✅ persist 실패 시에도 안전
+
+---
+
+### 🏗️ Architecture: 3계층 세션 시스템 (v2.0)
+
+#### Added
+- 🔒 **3계층 세션 관리**: Browser / Page / View Session 분리
+  - **Browser Session** (localStorage): 모든 탭 공유, 30분 TTL, 방문자 추적
+  - **Page Session** (sessionStorage): 탭별 독립, 탭 닫으면 소멸, 탭 추적
+  - **View Session** (메모리): 페이지 로드별, 새로고침마다 생성, 페이지뷰 추적
+  
+- 🛡️ **메모리 폴백**: 각 계층마다 storage 실패 시 메모리 사용
+  - `memoryBrowserSession`: localStorage 폴백
+  - `memoryPageSession`: sessionStorage 폴백
+  - `memoryViewSession`: 항상 메모리 우선
+
+- 📊 **통합 세션 컨텍스트**: payload에 3계층 모두 포함
+  - browserId, pageId, viewId
+  - 각 계층의 메타데이터 (firstVisit, viewCount 등)
+  - 하위 호환성 유지 (v1 필드 그대로)
+
+#### Changed
+- `getSessionMetadata()`: 3계층 세션 데이터 반환
+  - Before: `SessionData | null`
+  - After: `SessionData` (browser, page, view 포함)
+  
+- `getSessionContext()`: 3계층 컨텍스트 반환
+  - browserId, browserFirstVisit, browserTotalViews...
+  - pageId, pageOpenedAt, pageViewCount...
+  - viewId, viewLoadedAt, viewReferrer...
+
+#### Fixed
+- 🔧 **세션 오염 방지**: 여러 탭 동시 사용 시 격리
+  - Page Session은 탭별로 완전 독립
+  - View Session은 페이지 로드별 독립
+  - Browser Session은 의도적으로 공유
+
+- 🌐 **환경 호환성**: React/Next.js에서 안정적
+  - 모듈 레벨 변수로 메모리 관리
+  - 컴포넌트 리렌더와 무관
+  - SSR/CSR 모두 지원
+
+#### Breaking Changes
+- ❌ **없음!** 하위 호환성 완벽 유지
+  - v1 필드 (`sessionId`, `sessionPageViews` 등) 그대로 제공
+  - 기존 코드 수정 불필요
+  - v2 필드는 추가로 제공됨
+
 ## [1.1.0] - 2025-10-02
 
 ### 🚀 Major Performance Improvement

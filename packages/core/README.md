@@ -3,7 +3,29 @@
 웹 페이지 요소의 노출 시간과 사용자 상호작용을 추적하는 경량 분석 라이브러리입니다.  
 IntersectionObserver + 적응형 하트비트 기반으로 효율적으로 dwell(체류) 시간을 수집합니다.
 
-## 🎉 v1.0.0 - First Stable Release!
+## 🎊 Latest: v1.2.0
+
+### 🚀 What's New
+
+#### v1.2.0 - Architecture & Reliability (2025-10-05)
+- 🏗️ **3계층 세션 시스템**: Browser / Page / View Session 분리
+- 🔒 **이벤트 중복 방지**: 3단계 방어 시스템
+- 🚫 **탭별 큐 격리**: sessionStorage로 탭 간 오염 방지
+- 🛡️ **메모리 폴백**: storage 실패 시에도 세션 보장
+
+#### v1.1.0 - Performance (2025-10-02)
+- ⚡ **Event-based API**: onChange로 폴링 제거 (성능 향상)
+- 🔋 **CPU 사용률 감소**: 이벤트 기반 구독으로 최적화
+- ⚛️ **React 최적화**: 리렌더 감소
+
+#### v1.0.0 - First Stable Release
+- 🎯 **Immediate 모드**: 1px 감지 + px/% 마진
+- 📊 **향상된 메트릭**: viewportCoverage, isOversized 등
+- 🆕 **동적 Threshold**: 정밀한 추적을 위한 자동 최적화
+
+---
+
+## 🎉 v1.0.0 Features
 
 ### 주요 기능
 - 🚀 **V2 스키마 지원**: 더 구조화되고 효율적인 데이터 스키마
@@ -172,7 +194,7 @@ const tracker = createTracker({
 
 ### Tracker
 
-#### `createTracker(options: TrackerOptions): Tracker`
+#### `createTracker(options: TrackerOptionsV1 | TrackerOptionsV2): Tracker`
 
 새로운 Tracker 인스턴스를 생성합니다.
 

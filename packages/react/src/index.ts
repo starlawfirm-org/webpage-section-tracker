@@ -5,7 +5,8 @@ export { useElementDwell } from './hooks/useElementDwell';
 // Re-export types from core package
 export type {
   Tracker,
-  TrackerOptions,
+  TrackerOptionsV1,
+  TrackerOptionsV2,
   ElementDwellConfig,
   ElementDwellSnapshot,
   ElementDwellController,
